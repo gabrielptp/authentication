@@ -16,7 +16,11 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return the status of the API', () => {
-      expect(appController.getStatus()).toBe('OK');
+      const result = appController.getStatus();
+      expect(result).toHaveProperty('status', 'OK');
+      expect(result).toHaveProperty('message', 'Authentication API is running');
+      expect(result).toHaveProperty('timestamp');
+      expect(typeof result.timestamp).toBe('string');
     });
   });
 });
