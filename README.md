@@ -152,13 +152,3 @@ npm run test:cov # With coverage report
 ### **👥 User Management**
 9. **Role-Based Access Control (RBAC)** - User roles and permissions system
 10. **User Profile Management** - Extended user data and preferences
-
----
-
-## 📄 License
-
-UNLICENSED - See package.json for details
-
----
-
-*Built with ❤️ using NestJS, Redis, and TypeScript*
