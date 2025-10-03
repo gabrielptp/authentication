@@ -6,11 +6,22 @@ import helmet from 'helmet';
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
-    // Security headers (Helmet)
-    app.use(helmet());
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'"],
+                imgSrc: ["'self'", "data:", "https:"],
+            },
+        },
+    }));
 
-    // Enable CORS
-    app.enableCors();
+    app.enableCors({
+        origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
+        methods: ['GET', 'POST'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    });
 
     // Global validation pipe
     app.useGlobalPipes(
@@ -18,9 +29,7 @@ async function bootstrap() {
             whitelist: true,
             forbidNonWhitelisted: true,
             transform: true,
-            transformOptions: {
-                enableImplicitConversion: true,
-            },
+            disableErrorMessages: process.env.NODE_ENV === 'production',
         }),
     );
 
