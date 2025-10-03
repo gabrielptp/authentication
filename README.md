@@ -1,39 +1,36 @@
 # Authentication API (Nest.js + Redis)
 
-A secure and fast authentication API built with **Nest.js** and **Redis**.  
-Provides RESTful JSON endpoints for creating and authenticating users with proper error handling and password complexity checks.
+A secure authentication API built with **Nest.js** and **Redis**.  
+Provides RESTful endpoints for user registration and authentication with enterprise-grade security.
 
+[![Node.js](https://img.shields.io/badge/Node.js-24-green.svg)](https://nodejs.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-11-red.svg)](https://nestjs.com/)
+[![Redis](https://img.shields.io/badge/Redis-7-red.svg)](https://redis.io/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue.svg)](https://www.typescriptlang.org/)
+
+---
 
 ## 🚀 Quick Start
 
-### Option 1: Run Locally
-
 ```bash
-# 1. Install dependencies
+# Install dependencies
 npm install
 
-# 2. Start Redis in Docker
+# Start Redis
 npm run docker:redis
 
-# 3. Run the API locally
+# Run the API
 npm run dev
 
-# 4. Stop Redis when done
-npm run docker:redis:stop
+# API available at: http://localhost:3000
 ```
 
-**API will be available at:** `http://localhost:3000`
-
-### Option 2: Run with Docker
-
+### Docker Option
 ```bash
-# Run the entire stack (API + Redis) in Docker
-npm run docker:test
+npm run docker:test  # Run full stack (API + Redis)
 ```
 
-**API will be available at:** `http://localhost:3000`
-
-
+---
 
 ## 📋 API Endpoints
 
@@ -47,7 +44,6 @@ Content-Type: application/json
   "password": "TestPass123!"
 }
 ```
-**Rate Limit:** 3 requests per minute
 
 ### User Verification
 ```http
@@ -59,103 +55,110 @@ Content-Type: application/json
   "password": "TestPass123!"
 }
 ```
-**Rate Limit:** 5 requests per minute
 
 ### Health Check
 ```http
 GET /
 ```
-**Rate Limit:** 10 requests per minute (default)
 
+**Rate Limits:** Register (3/min), Verify (5/min), Default (10/min)
 
-## ✨ Features
+---
 
-- **User Registration**: Create new users with unique email validation
-- **User Authentication**: Verify user credentials with proper HTTP status codes
-- **Rate Limiting**: Protection against spam and brute force attacks
-- **Security Headers**: Helmet middleware for enhanced security
-- **Password Security**: bcrypt hashing with 12 salt rounds
-- **Input Validation**: Class-validator for request validation
-- **Redis Storage**: Fast, in-memory user data storage
-- **Error Handling**: Structured JSON error responses
-- **CORS Enabled**: Cross-origin resource sharing support
+## ✨ Key Features
 
+- **🔐 Security**: bcrypt password hashing, rate limiting, security headers
+- **⚡ Performance**: Redis storage with atomic operations
+- **🛡️ Validation**: Strong password requirements, input validation
+- **🧪 Testing**: 8 unit tests, E2E tests, comprehensive coverage
+- **🐳 Docker**: Full containerization with multi-stage builds
+- **📊 Monitoring**: Health checks, structured logging
+- **🔧 Config**: Environment-based configuration management
 
+---
 
-## 🛠️ Available Scripts
+## 🛠️ Technology Stack
 
-- `npm run dev` - Run locally with ts-node
-- `npm run dev:watch` - Run locally with file watching
-- `npm run docker:test` - Run full stack in Docker for testing
-- `npm run docker:redis` - Start only Redis for local development
-- `npm run docker:redis:stop` - Stop Redis
-- `npm run build` - Build for production
-- `npm run start` - Run production build
-- `npm run test` - Run unit tests
-- `npm run test:e2e` - Run end-to-end tests
-- `npm run test:cov` - Run tests with coverage  
+- **Backend**: NestJS, TypeScript, Node.js
+- **Database**: Redis with ioredis client
+- **Security**: bcryptjs, Helmet, class-validator
+- **Testing**: Jest, Supertest
+- **DevOps**: Docker, Docker Compose
 
+---
 
-## 🔧 Development
+## 🛠️ Scripts
 
-### Environment Configuration
+```bash
+npm run dev          # Development server
+npm run build        # Build for production
+npm run test         # Run all tests
+npm run test:unit    # Unit tests only
+npm run test:e2e     # E2E tests
+npm run docker:redis # Start Redis
+```
 
-Create environment files for different environments:
+---
 
-#### Development (`.env.development`)
+## 🔧 Configuration
+
+### Environment Variables
 ```bash
 NODE_ENV=development
 PORT=3000
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=optional
 ```
 
-#### Production (`.env.production`)
-```bash
-NODE_ENV=production
-PORT=3000
-REDIS_HOST=your-redis-host.com
-REDIS_PORT=6379
-REDIS_PASSWORD=your-secure-redis-password
-```
+### Password Requirements
+- 8-16 characters
+- Uppercase, lowercase, number, special character (@$!%*?&)
 
-#### Environment Variables
-- `NODE_ENV` - Environment (development/production)
-- `PORT` - API port (default: 3000)
-- `REDIS_HOST` - Redis host (default: localhost)
-- `REDIS_PORT` - Redis port (default: 6379)
-- `REDIS_PASSWORD` - Redis password (optional)
-
+---
 
 ## 🧪 Testing
 
 ```bash
-# Run unit tests
-npm run test
-
-# Run e2e tests
-npm run test:e2e
-
-# Run tests with coverage
-npm run test:cov
+npm test         # All tests (8 unit + E2E)
+npm run test:cov # With coverage report
 ```
 
-## 🚦 Rate Limiting
+**Test Coverage:**
+- ✅ User registration flow
+- ✅ User authentication flow  
+- ✅ Error handling scenarios
+- ✅ Security validations
+- ✅ Redis operations
 
-The API implements rate limiting to prevent abuse and ensure fair usage:
+---
 
-| Endpoint | Rate Limit | Purpose |
-|----------|------------|---------|
-| `POST /users/register` | 3 requests/minute | Prevents spam registrations |
-| `POST /users/verify` | 5 requests/minute | Prevents brute force attacks |
-| `GET /` | 10 requests/minute | General API protection |
+## 🚀 Future Improvements
 
-### Rate Limit Response
-When rate limits are exceeded, the API returns:
-```json
-{
-  "statusCode": 429,
-  "message": "ThrottlerException: Too Many Requests",
-  "error": "Too Many Requests"
-}
-```
+### **🔐 Security Enhancements**
+1. **JWT Token Authentication** - Stateless auth with refresh tokens
+2. **Two-Factor Authentication (2FA)** - SMS/Email/TOTP-based security
+3. **OAuth2 Integration** - Google, GitHub, Microsoft login
+4. **Password Reset System** - Secure email-based password recovery
+
+### **📊 Monitoring & Analytics**
+5. **Metrics & Health Monitoring** - Prometheus/Grafana integration
+6. **Error Tracking** - Sentry integration for production monitoring
+
+### **🏗️ Architecture Improvements**
+7. **Database Migration** - PostgreSQL/MySQL as primary store with Redis caching
+8. **Microservices Architecture** - Split into auth, user, and notification services
+
+### **👥 User Management**
+9. **Role-Based Access Control (RBAC)** - User roles and permissions system
+10. **User Profile Management** - Extended user data and preferences
+
+---
+
+## 📄 License
+
+UNLICENSED - See package.json for details
+
+---
+
+*Built with ❤️ using NestJS, Redis, and TypeScript*
