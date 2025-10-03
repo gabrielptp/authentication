@@ -1,27 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    const configService = app.get(ConfigService);
 
-    app.use(helmet({
-        contentSecurityPolicy: {
-            directives: {
-                defaultSrc: ["'self'"],
-                styleSrc: ["'self'", "'unsafe-inline'"],
-                scriptSrc: ["'self'"],
-                imgSrc: ["'self'", "data:", "https:"],
-            },
-        },
-    }));
+    // Security headers (Helmet)
+    app.use(helmet());
 
-    app.enableCors({
-        origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
-        methods: ['GET', 'POST'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    });
+    // Enable CORS
+    app.enableCors();
 
     // Global validation pipe
     app.useGlobalPipes(
@@ -29,16 +20,18 @@ async function bootstrap() {
             whitelist: true,
             forbidNonWhitelisted: true,
             transform: true,
-            disableErrorMessages: process.env.NODE_ENV === 'production',
+            disableErrorMessages: configService.get<string>('nodeEnv') === 'production',
         }),
     );
 
-    const port = process.env.PORT || 3000;
-    const redisHost = process.env.REDIS_HOST || 'localhost';
-    const redisPort = process.env.REDIS_PORT || 6379;
+    const port = configService.get<number>('port');
+    const redisHost = configService.get<string>('redis.host');
+    const redisPort = configService.get<number>('redis.port');
+    const nodeEnv = configService.get<string>('nodeEnv');
 
     await app.listen(port);
     console.log(`- Authentication API running on port ${port}`);
+    console.log(`- Environment: ${nodeEnv}`);
     console.log(`- Redis connection: ${redisHost}:${redisPort}`);
     console.log(`- Security headers enabled`);
 }

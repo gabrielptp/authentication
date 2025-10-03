@@ -98,10 +98,33 @@ GET /
 
 ## 🔧 Development
 
-### Environment Variables
+### Environment Configuration
+
+Create environment files for different environments:
+
+#### Development (`.env.development`)
+```bash
+NODE_ENV=development
+PORT=3000
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+#### Production (`.env.production`)
+```bash
+NODE_ENV=production
+PORT=3000
+REDIS_HOST=your-redis-host.com
+REDIS_PORT=6379
+REDIS_PASSWORD=your-secure-redis-password
+```
+
+#### Environment Variables
+- `NODE_ENV` - Environment (development/production)
 - `PORT` - API port (default: 3000)
 - `REDIS_HOST` - Redis host (default: localhost)
 - `REDIS_PORT` - Redis port (default: 6379)
+- `REDIS_PASSWORD` - Redis password (optional)
 
 
 ## 🧪 Testing

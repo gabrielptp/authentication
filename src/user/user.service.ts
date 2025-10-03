@@ -1,4 +1,5 @@
 import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Redis } from 'ioredis';
 import * as bcrypt from 'bcryptjs';
 import { UserRegisterDto } from '../dto/user-register.dto';
@@ -12,10 +13,11 @@ export class UserService {
     private readonly EMAIL_INDEX_PREFIX = 'user:email';
     private readonly USERS_SET_KEY = 'users:all';
 
-    constructor() {
+    constructor(private configService: ConfigService) {
         this.redis = new Redis({
-            host: process.env.REDIS_HOST || 'localhost',
-            port: parseInt(process.env.REDIS_PORT || '6379'),
+            host: this.configService.get<string>('redis.host'),
+            port: this.configService.get<number>('redis.port'),
+            password: this.configService.get<string>('redis.password'),
             maxRetriesPerRequest: 3,
         });
     }
