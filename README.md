@@ -109,6 +109,7 @@ PORT=3000
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=optional
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001,https://yourdomain.com
 ```
 
 ### Password Requirements

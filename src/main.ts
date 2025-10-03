@@ -9,10 +9,26 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
 
     // Security headers (Helmet)
-    app.use(helmet());
+    app.use(helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'"],
+                imgSrc: ["'self'", "data:", "https:"],
+            },
+        },
+        crossOriginEmbedderPolicy: false, // Disable for API compatibility
+    }));
 
-    // Enable CORS
-    app.enableCors();
+    // Configure CORS
+    app.enableCors({
+        origin: configService.get<string[]>('cors.origins'),
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+        credentials: true,
+        maxAge: 86400, // 24 hours
+    });
 
     // Global validation pipe
     app.useGlobalPipes(
