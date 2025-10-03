@@ -6,6 +6,11 @@ import { UserRegisterDto } from '../dto/user-register.dto';
 @Injectable()
 export class UserService {
     private redis: Redis;
+    
+    // Redis key constants
+    private readonly USER_PREFIX = 'user';
+    private readonly EMAIL_INDEX_PREFIX = 'user:email';
+    private readonly USERS_SET_KEY = 'users:all';
 
     constructor() {
         this.redis = new Redis({
@@ -16,37 +21,16 @@ export class UserService {
     }
 
     async register(userData: UserRegisterDto): Promise<{ message: string; userId: string }> {
-        const { username, password } = userData;
+        const { email, password } = userData;
 
-        const usernameExists = await this.redis.exists(`user:username:${username}`);
-        if (usernameExists) {
-            throw new ConflictException('Username is already taken');
-        }
+        await this.validateEmailNotExists(email);
 
         try {
-            // Generate user ID
-            const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-            // Hash password
-            const saltRounds = 12;
-            const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-            // Store user data in Redis
-            const userKey = `user:${userId}`;
-            const userDataToStore = {
-                id: userId,
-                username,
-                password: hashedPassword,
-                createdAt: new Date().toISOString(),
-                isActive: true,
-            };
-
-            // Use Redis pipeline for atomic operations
-            const pipeline = this.redis.pipeline();
-            pipeline.hset(userKey, userDataToStore);
-            pipeline.set(`user:username:${username}`, userId);
-            pipeline.sadd('users:all', userId);
-            await pipeline.exec();
+            const userId = this.generateUserId();
+            const hashedPassword = await this.hashPassword(password);
+            const userDataToStore = this.createUserData(userId, email, hashedPassword);
+            
+            await this.storeUserData(userId, email, userDataToStore);
 
             return {
                 message: 'User registered successfully',
@@ -58,8 +42,8 @@ export class UserService {
         }
     }
 
-    async findByUsername(username: string): Promise<any> {
-        const userId = await this.redis.get(`user:username:${username}`);
+    async findByEmail(email: string): Promise<any> {
+        const userId = await this.redis.get(`${this.EMAIL_INDEX_PREFIX}:${email}`);
         if (!userId) {
             return null;
         }
@@ -67,7 +51,7 @@ export class UserService {
     }
 
     async findById(userId: string): Promise<any> {
-        const userData = await this.redis.hgetall(`user:${userId}`);
+        const userData = await this.redis.hgetall(`${this.USER_PREFIX}:${userId}`);
         if (!userData || Object.keys(userData).length === 0) {
             return null;
         }
@@ -78,9 +62,9 @@ export class UserService {
         return await bcrypt.compare(plainPassword, hashedPassword);
     }
 
-    async verifyUser(username: string, password: string): Promise<{ isValid: boolean; user?: any }> {
+    async verifyUser(email: string, password: string): Promise<{ isValid: boolean; user?: any }> {
         try {
-            const user = await this.findByUsername(username);
+            const user = await this.findByEmail(email);
             
             if (!user) {
                 return { isValid: false };
@@ -92,8 +76,7 @@ export class UserService {
                 return { isValid: false };
             }
 
-            // Return user data without password
-            const { password: _, ...userWithoutPassword } = user;
+            const userWithoutPassword = this.removePasswordFromUser(user);
             return {
                 isValid: true,
                 user: userWithoutPassword,
@@ -102,6 +85,48 @@ export class UserService {
             console.error('User verification error:', error);
             return { isValid: false };
         }
+    }
+
+    private async validateEmailNotExists(email: string): Promise<void> {
+        const emailExists = await this.redis.exists(`${this.EMAIL_INDEX_PREFIX}:${email}`);
+        if (emailExists) {
+            throw new ConflictException('Email is already registered');
+        }
+    }
+
+    private generateUserId(): string {
+        return `user_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+    }
+
+    private async hashPassword(password: string): Promise<string> {
+        const saltRounds = 12;
+        return await bcrypt.hash(password, saltRounds);
+    }
+
+    private createUserData(userId: string, email: string, hashedPassword: string) {
+        return {
+            id: userId,
+            email,
+            password: hashedPassword,
+            createdAt: new Date().toISOString(),
+            isActive: true,
+        };
+    }
+
+    private async storeUserData(userId: string, email: string, userDataToStore: any): Promise<void> {
+        const userKey = `${this.USER_PREFIX}:${userId}`;
+        const pipeline = this.redis.pipeline();
+        
+        pipeline.hset(userKey, userDataToStore);
+        pipeline.set(`${this.EMAIL_INDEX_PREFIX}:${email}`, userId);
+        pipeline.sadd(this.USERS_SET_KEY, userId);
+        
+        await pipeline.exec();
+    }
+
+    private removePasswordFromUser(user: any): any {
+        const { password: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
     }
 
     onModuleDestroy() {

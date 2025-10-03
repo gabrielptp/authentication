@@ -43,7 +43,7 @@ POST /users/register
 Content-Type: application/json
 
 {
-  "username": "user@example.com",
+  "email": "user@example.com",
   "password": "TestPass123!"
 }
 ```
@@ -54,7 +54,7 @@ POST /users/verify
 Content-Type: application/json
 
 {
-  "username": "user@example.com",
+  "email": "user@example.com",
   "password": "TestPass123!"
 }
 ```
@@ -67,7 +67,7 @@ GET /
 
 ## ✨ Features
 
-- **User Registration**: Create new users with unique username validation
+- **User Registration**: Create new users with unique email validation
 - **User Authentication**: Verify user credentials with proper HTTP status codes
 - **Security Headers**: Helmet middleware for enhanced security
 - **Password Security**: bcrypt hashing with 12 salt rounds

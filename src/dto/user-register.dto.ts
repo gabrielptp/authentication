@@ -2,7 +2,7 @@ import { IsEmail, IsString, MinLength, MaxLength, Matches } from 'class-validato
 
 export class UserRegisterDto {
     @IsEmail({}, { message: 'Please provide a valid email address' })
-    username: string;
+    email: string;
 
     @IsString({ message: 'Password must be a string' })
     @MinLength(8, { message: 'Password must be at least 8 characters long' })

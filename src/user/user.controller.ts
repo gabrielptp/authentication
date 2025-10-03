@@ -20,11 +20,11 @@ export class UserController {
     @Post('verify')
     @HttpCode(HttpStatus.OK)
     async verify(@Body() userVerifyDto: UserVerifyDto) {
-        const { username, password } = userVerifyDto;
-        const result = await this.userService.verifyUser(username, password);
+        const { email, password } = userVerifyDto;
+        const result = await this.userService.verifyUser(email, password);
 
         if (!result.isValid) {
-            throw new UnauthorizedException('Invalid username or password');
+            throw new UnauthorizedException('Invalid email or password');
         }
 
         return {
