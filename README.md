@@ -47,6 +47,7 @@ Content-Type: application/json
   "password": "TestPass123!"
 }
 ```
+**Rate Limit:** 3 requests per minute
 
 ### User Verification
 ```http
@@ -58,17 +59,20 @@ Content-Type: application/json
   "password": "TestPass123!"
 }
 ```
+**Rate Limit:** 5 requests per minute
 
 ### Health Check
 ```http
 GET /
 ```
+**Rate Limit:** 10 requests per minute (default)
 
 
 ## ✨ Features
 
 - **User Registration**: Create new users with unique email validation
 - **User Authentication**: Verify user credentials with proper HTTP status codes
+- **Rate Limiting**: Protection against spam and brute force attacks
 - **Security Headers**: Helmet middleware for enhanced security
 - **Password Security**: bcrypt hashing with 12 salt rounds
 - **Input Validation**: Class-validator for request validation
@@ -111,4 +115,24 @@ npm run test:e2e
 
 # Run tests with coverage
 npm run test:cov
+```
+
+## 🚦 Rate Limiting
+
+The API implements rate limiting to prevent abuse and ensure fair usage:
+
+| Endpoint | Rate Limit | Purpose |
+|----------|------------|---------|
+| `POST /users/register` | 3 requests/minute | Prevents spam registrations |
+| `POST /users/verify` | 5 requests/minute | Prevents brute force attacks |
+| `GET /` | 10 requests/minute | General API protection |
+
+### Rate Limit Response
+When rate limits are exceeded, the API returns:
+```json
+{
+  "statusCode": 429,
+  "message": "ThrottlerException: Too Many Requests",
+  "error": "Too Many Requests"
+}
 ```

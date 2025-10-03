@@ -1,4 +1,5 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, UnauthorizedException } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UserService } from './user.service';
 import { UserRegisterDto } from '../dto/user-register.dto';
 import { UserVerifyDto } from '../dto/user-verify.dto';
@@ -9,6 +10,7 @@ export class UserController {
 
     @Post('register')
     @HttpCode(HttpStatus.CREATED)
+    @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 registrations per minute
     async register(@Body() userRegisterDto: UserRegisterDto) {
         const result = await this.userService.register(userRegisterDto);
         return {
@@ -19,6 +21,7 @@ export class UserController {
 
     @Post('verify')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 verification attempts per minute
     async verify(@Body() userVerifyDto: UserVerifyDto) {
         const { email, password } = userVerifyDto;
         const result = await this.userService.verifyUser(email, password);
