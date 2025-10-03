@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import helmet from 'helmet';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // Security headers (Helmet)
+    app.use(helmet());
 
     // Enable CORS
     app.enableCors();
@@ -25,7 +29,8 @@ async function bootstrap() {
     const redisPort = process.env.REDIS_PORT || 6379;
 
     await app.listen(port);
-    console.log(`🚀 Authentication API running on port ${port}`);
-    console.log(`📡 Redis connection: ${redisHost}:${redisPort}`);
+    console.log(`- Authentication API running on port ${port}`);
+    console.log(`- Redis connection: ${redisHost}:${redisPort}`);
+    console.log(`- Security headers enabled`);
 }
 bootstrap();
