@@ -1,26 +1,11 @@
 import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Redis } from 'ioredis';
+import { RedisService } from '../redis/redis.service';
 import * as bcrypt from 'bcryptjs';
 import { UserRegisterDto } from '../dto/user-register.dto';
 
 @Injectable()
 export class UserService {
-    private redis: Redis;
-    
-    // Redis key constants
-    private readonly USER_PREFIX = 'user';
-    private readonly EMAIL_INDEX_PREFIX = 'user:email';
-    private readonly USERS_SET_KEY = 'users:all';
-
-    constructor(private configService: ConfigService) {
-        this.redis = new Redis({
-            host: this.configService.get<string>('redis.host'),
-            port: this.configService.get<number>('redis.port'),
-            password: this.configService.get<string>('redis.password'),
-            maxRetriesPerRequest: 3,
-        });
-    }
+    constructor(private redisService: RedisService) {}
 
     async register(userData: UserRegisterDto): Promise<{ message: string; userId: string }> {
         const { email, password } = userData;
@@ -32,7 +17,7 @@ export class UserService {
             const hashedPassword = await this.hashPassword(password);
             const userDataToStore = this.createUserData(userId, email, hashedPassword);
             
-            await this.storeUserData(userId, email, userDataToStore);
+            await this.redisService.storeUser(userId, email, userDataToStore);
 
             return {
                 message: 'User registered successfully',
@@ -45,7 +30,7 @@ export class UserService {
     }
 
     async findByEmail(email: string): Promise<any> {
-        const userId = await this.redis.get(`${this.EMAIL_INDEX_PREFIX}:${email}`);
+        const userId = await this.redisService.getUserByEmail(email);
         if (!userId) {
             return null;
         }
@@ -53,11 +38,7 @@ export class UserService {
     }
 
     async findById(userId: string): Promise<any> {
-        const userData = await this.redis.hgetall(`${this.USER_PREFIX}:${userId}`);
-        if (!userData || Object.keys(userData).length === 0) {
-            return null;
-        }
-        return userData;
+        return await this.redisService.getUserData(userId);
     }
 
     async validatePassword(plainPassword: string, hashedPassword: string): Promise<boolean> {
@@ -90,7 +71,7 @@ export class UserService {
     }
 
     private async validateEmailNotExists(email: string): Promise<void> {
-        const emailExists = await this.redis.exists(`${this.EMAIL_INDEX_PREFIX}:${email}`);
+        const emailExists = await this.redisService.userExists(email);
         if (emailExists) {
             throw new ConflictException('Email is already registered');
         }
@@ -115,23 +96,10 @@ export class UserService {
         };
     }
 
-    private async storeUserData(userId: string, email: string, userDataToStore: any): Promise<void> {
-        const userKey = `${this.USER_PREFIX}:${userId}`;
-        const pipeline = this.redis.pipeline();
-        
-        pipeline.hset(userKey, userDataToStore);
-        pipeline.set(`${this.EMAIL_INDEX_PREFIX}:${email}`, userId);
-        pipeline.sadd(this.USERS_SET_KEY, userId);
-        
-        await pipeline.exec();
-    }
 
     private removePasswordFromUser(user: any): any {
         const { password: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
     }
 
-    onModuleDestroy() {
-        this.redis.disconnect();
-    }
 }

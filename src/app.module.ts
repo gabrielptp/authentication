@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
+import { RedisModule } from './redis/redis.module';
 import envConfig from './config/env.config';
 
 @Module({
@@ -21,6 +22,7 @@ import envConfig from './config/env.config';
             ttl: 60000, // 1 minute
             limit: 10,  // 10 requests per minute (default)
         }]),
+        RedisModule,
         UserModule,
     ],
     controllers: [AppController],
