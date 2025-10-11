@@ -1,7 +1,8 @@
-import { Controller, Post, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Get, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
+import { ProductFilterDto } from '../dto/product-filter.dto';
 
-@Controller('product')
+@Controller('products')
 export class ProductController {
     constructor(private readonly productService: ProductService) {}
 
@@ -12,6 +13,21 @@ export class ProductController {
         return {
             success: true,
             data: result,
+        };
+    }
+
+    @Get('search')
+    @HttpCode(HttpStatus.OK)
+    async searchProducts(@Query() filters: ProductFilterDto) {
+        const result = await this.productService.search(filters);
+        return {
+            success: true,
+            data: {
+                products: result.products,
+                total: result.total,
+                limit: filters.limit || 20,
+                offset: filters.offset || 0,
+            },
         };
     }
 

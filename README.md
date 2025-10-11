@@ -60,15 +60,45 @@ Content-Type: application/json
 
 #### Generate Products
 ```http
-POST /product/generate
+POST /products/generate
 ```
 Generates 100 sample products in PostgreSQL database.
 
 #### Get All Products
 ```http
-GET /product
+GET /products
 ```
 Returns all products from the database.
+
+#### Search Products
+```http
+GET /products/search?category=Electronics&minPrice=100&maxPrice=500&limit=10
+```
+
+**Query Parameters:**
+- `name` - Filter by product name (partial match)
+- `category` - Filter by category (partial match)
+- `brand` - Filter by brand (partial match)
+- `sku` - Filter by SKU (partial match)
+- `minPrice` - Minimum price filter
+- `maxPrice` - Maximum price filter
+- `minStock` - Minimum stock quantity
+- `maxStock` - Maximum stock quantity
+- `limit` - Results per page (default: 20, max: 100)
+- `offset` - Pagination offset (default: 0)
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "products": [...],
+    "total": 25,
+    "limit": 10,
+    "offset": 0
+  }
+}
+```
 
 ### Health Check
 ```http
