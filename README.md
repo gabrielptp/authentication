@@ -16,8 +16,8 @@ Provides RESTful endpoints for user registration and authentication with enterpr
 # Install dependencies
 npm install
 
-# Start Redis
-npm run docker:redis
+# Start databases (Redis + PostgreSQL)
+npm run docker:dev
 
 # Run the API
 npm run dev
@@ -27,7 +27,17 @@ npm run dev
 
 ### Docker Option
 ```bash
-npm run docker:test  # Run full stack (API + Redis)
+npm run docker:test  # Run full stack (API + Redis + PostgreSQL)
+```
+
+### React Frontend
+```bash
+# Open the product catalog interface
+open client/index.html
+
+# Or serve with Python
+cd client && python3 -m http.server 8080
+# Visit: http://localhost:8080
 ```
 
 ---
