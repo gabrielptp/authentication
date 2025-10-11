@@ -56,6 +56,20 @@ Content-Type: application/json
 }
 ```
 
+### Product Catalog
+
+#### Generate Products
+```http
+POST /product/generate
+```
+Generates 100 sample products in PostgreSQL database.
+
+#### Get All Products
+```http
+GET /product
+```
+Returns all products from the database.
+
 ### Health Check
 ```http
 GET /
@@ -74,13 +88,15 @@ GET /
 - **🐳 Docker**: Full containerization with multi-stage builds
 - **📊 Monitoring**: Health checks, structured logging
 - **🔧 Config**: Environment-based configuration management
+- **📦 Product Catalog**: PostgreSQL-based product management with sample data generation
 
 ---
 
 ## 🛠️ Technology Stack
 
 - **Backend**: NestJS, TypeScript, Node.js
-- **Database**: Redis with ioredis client
+- **Databases**: PostgreSQL, Redis with ioredis client
+- **ORM**: TypeORM for PostgreSQL
 - **Security**: bcryptjs, Helmet, class-validator
 - **Testing**: Jest, Supertest
 - **DevOps**: Docker, Docker Compose
@@ -90,12 +106,15 @@ GET /
 ## 🛠️ Scripts
 
 ```bash
-npm run dev          # Development server
-npm run build        # Build for production
-npm run test         # Run all tests
-npm run test:unit    # Unit tests only
-npm run test:e2e     # E2E tests
-npm run docker:redis # Start Redis
+npm run dev              # Development server
+npm run build            # Build for production
+npm run test             # Run all tests
+npm run test:unit        # Unit tests only
+npm run test:e2e         # E2E tests
+npm run docker:redis     # Start Redis only
+npm run docker:postgres  # Start PostgreSQL only
+npm run docker:dev       # Start Redis + PostgreSQL
+npm run docker:dev:stop  # Stop all databases
 ```
 
 ---
@@ -106,9 +125,20 @@ npm run docker:redis # Start Redis
 ```bash
 NODE_ENV=development
 PORT=3000
+
+# Redis Configuration
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=optional
+
+# PostgreSQL Configuration
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=authentication
+
+# CORS Configuration
 CORS_ORIGINS=http://localhost:3000,http://localhost:3001,https://yourdomain.com
 ```
 
